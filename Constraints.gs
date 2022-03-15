@@ -1,3 +1,4 @@
+
 function Constraints() {
 
   var posConstraints = 
@@ -35,6 +36,10 @@ function Constraints() {
     return arr.reduce((ac,l) => ac+=(l==el)?1:0,0);
   }
 
+  function distinct(arr){
+    return [...new Set(arr)];
+  }
+
   this.getUsedLetters = function(){
     var usedWords = this.hints.map(h => h.replaceAll(/[^a-zñ]+/ig,'').toLowerCase());
     console.log(usedWords);
@@ -47,12 +52,13 @@ function Constraints() {
     return usedLetters;
   }
 
-  this.getInformative = function(){
+  this.getInformative = function(dict = DICT){
     var usedLetters = this.getUsedLetters();
     var filter = (dict) => dict.sort((a,b)=>wordValue(b,usedLetters)-wordValue(a,usedLetters));
     
-    var result=filter(DICT);
-    return result;
+    var result = filter(dict);
+
+    return distinct(result);
   }
 
   this.getCandidates = function(dict = DICT){
@@ -65,7 +71,7 @@ function Constraints() {
     
     var result = filter(dict);
     
-    return result;
+    return distinct(result);
   }
 
   var hintRegex = /^\s*(!?[a-zñ])\s*(!?[a-zñ])\s*(!?[a-zñ])\s*(!?[a-zñ])\s*(!?[a-zñ])\s*$/i;
@@ -86,7 +92,12 @@ function Constraints() {
         var c = constraints;
         var posConstraint = c.posConstraints[i];
         if(l[0]=="!"){
-          pushUnique(constraints.notMatch,l[1].toLowerCase())
+          var cur = l[1].toLowerCase();
+          if(!constraints.possible.includes(cur)){
+            pushUnique(constraints.notMatch,cur);
+          }else{
+            pushUnique(posConstraint.notHere,cur)
+          }
         }else if(l[0]==l[0].toUpperCase()){
           posConstraint.confirmed = l[0].toLowerCase();
         }else{
